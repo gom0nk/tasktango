@@ -1,0 +1,71 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model User {
+    sNo       Int      @default(autoincrement())
+    id        String   @id @default(uuid())
+    name      String
+    email     String   @unique
+    password  String
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    Project Project[] @relation(name: "UserProjects")
+}
+
+model Project {
+    id          String   @id @default(uuid())
+    name        String
+    description String
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+    userId      String
+    user        User     @relation(name: "UserProjects", fields: [userId], references: [id])
+    tasks       Task[]   @relation(name: "ProjectTasks")
+}
+
+model Task {
+    id          String    @id @default(uuid())
+    name        String
+    description String
+    createdAt   DateTime  @default(now())
+    updatedAt   DateTime  @updatedAt
+    projectId   String
+    project     Project?  @relation(name: "ProjectTasks", fields: [projectId], references: [id])
+    subTasks    SubTask[] @relation(name: "TaskSubTasks")
+    comments    Comment[] @relation(name: "TaskComments")
+}
+
+model SubTask {
+    id          String    @id @default(uuid())
+    name        String
+    description String
+    createdAt   DateTime  @default(now())
+    updatedAt   DateTime  @updatedAt
+    taskId      String
+    task        Task?     @relation(name: "TaskSubTasks", fields: [taskId], references: [id])
+    comments    Comment[] @relation(name: "SubTaskComments")
+}
+
+model Comment {
+    id        String   @id @default(uuid())
+    content   String
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    taskId    String?
+    task      Task?    @relation(name: "TaskComments", fields: [taskId], references: [id])
+    subTaskId String?
+    subTask   SubTask? @relation(name: "SubTaskComments", fields: [subTaskId], references: [id])
+}
