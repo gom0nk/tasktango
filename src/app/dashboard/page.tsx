@@ -5,6 +5,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { GlobalSearch } from "@/components/GlobalSearch";
 import { TaskCreationBox } from "@/components/Dashboard/TaskCreationBox";
 import { getCurrentUser } from "@/lib/auth";
+import useTask from "@/hooks/task";
 import {
     Search,
     Inbox,
@@ -19,16 +20,33 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import TodoLoading from "@/components/Loading/TodoLoading";
 
 export default function Dashboard() {
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [user, setUser] = useState<any>(null);
+    const [tasks, setTasks] = useState<any[]>([]);
+    const { createTask, getTasks, isLoading } = useTask();
 
     useEffect(() => {
         // Get user from localStorage on mount
         const currentUser = getCurrentUser();
         setUser(currentUser);
+
+        // Load tasks when component mounts
+        if (currentUser) {
+            loadTasks();
+        }
     }, []);
+
+    const loadTasks = async () => {
+        try {
+            const tasksData = await getTasks();
+            setTasks(tasksData || []);
+        } catch (error) {
+            console.error('Failed to load tasks:', error);
+        }
+    };
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -42,7 +60,7 @@ export default function Dashboard() {
         return () => document.removeEventListener('keydown', handleKeyDown);
     }, []);
 
-    const handleTaskSubmit = (task: {
+    const handleTaskSubmit = async (task: {
         name: string;
         description: string;
         date?: string;
@@ -50,8 +68,18 @@ export default function Dashboard() {
         reminders?: string;
         project?: string;
     }) => {
-        console.log('New task created:', task);
-        // TODO: Implement task creation logic
+        try {
+            const taskData = {
+                name: task.name,
+                description: task.description
+            } as any;
+
+            await createTask(taskData);
+            // Reload tasks after creating a new one
+            await loadTasks();
+        } catch (error) {
+            console.error('Failed to create task:', error);
+        }
     };
 
     return (
@@ -170,55 +198,31 @@ export default function Dashboard() {
                 {/* Task List */}
                 <div className="flex-1 p-6">
                     <div className="space-y-0">
-                        {/* Task 1 */}
-                        <div className="flex items-center gap-3 py-3 border-b border-border">
-                            <div className="w-4 h-4 border border-muted-foreground rounded-full"></div>
-                            <div className="flex-1">
-                                <div className="font-medium">SQL</div>
-                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                    <Calendar className="h-3 w-3" />
-                                    <span className="text-destructive">Yesterday</span>
-                                </div>
+                        {isLoading ? (
+                            <TodoLoading />
+                        ) : tasks.length === 0 ? (
+                            <div className="flex items-center justify-center py-8">
+                                <div className="text-muted-foreground">No tasks found</div>
                             </div>
-                        </div>
-
-                        {/* Task 2 */}
-                        <div className="flex items-center gap-3 py-3 border-b border-border">
-                            <div className="w-4 h-4 border border-muted-foreground rounded-full"></div>
-                            <div className="flex-1">
-                                <div className="font-medium">GraphQL</div>
-                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                    <Calendar className="h-3 w-3" />
-                                    <span className="text-green-500">Today</span>
+                        ) : (
+                            tasks.map((task, index) => (
+                                <div key={task.id || index} className="flex items-center gap-3 py-3 border-b border-border">
+                                    <div className="w-4 h-4 border border-muted-foreground rounded-full"></div>
+                                    <div className="flex-1">
+                                        <div className="font-medium">{task.name}</div>
+                                        {task.description && (
+                                            <div className="text-sm text-muted-foreground mt-1">
+                                                {task.description}
+                                            </div>
+                                        )}
+                                        <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
+                                            <Calendar className="h-3 w-3" />
+                                            <span>{new Date(task.createdAt).toLocaleDateString()}</span>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
-
-                        {/* Task 3 */}
-                        <div className="flex items-center gap-3 py-3 border-b border-border">
-                            <div className="w-4 h-4 border border-muted-foreground rounded-full"></div>
-                            <div className="flex-1">
-                                <div className="font-medium">Go</div>
-                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                    <Calendar className="h-3 w-3" />
-                                    <span className="text-destructive">Yesterday 01:00</span>
-                                    <RotateCcw className="h-3 w-3" />
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Task 4 - Expandable */}
-                        <div className="flex items-center gap-3 py-3 border-b border-border">
-                            <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                            <div className="w-4 h-4 border border-muted-foreground rounded-full"></div>
-                            <div className="flex-1">
-                                <div className="font-medium">Prisma</div>
-                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                    <LinkIcon className="h-3 w-3" />
-                                    <span>0/2</span>
-                                </div>
-                            </div>
-                        </div>
+                            ))
+                        )}
                     </div>
 
                     {/* Add Task Button at Bottom */}

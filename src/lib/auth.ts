@@ -111,3 +111,35 @@ export const getCurrentUser = (): User | null => {
 export const isLoggedIn = (): boolean => {
     return !!localStorage.getItem("token") && !!localStorage.getItem("user");
 };
+
+/**
+ * Verify JWT token and return user data (client-side only)
+ * For server-side verification, use the JWT library directly
+ */
+export const verifyToken = (token: string): { id: string; name: string; email: string } | null => {
+    try {
+        // For client-side verification, we'll check localStorage
+        // This is only used in client components
+        if (typeof window === 'undefined') {
+            console.error('verifyToken should not be called on server-side');
+            return null;
+        }
+
+        const userData = localStorage.getItem("user");
+        if (!userData) return null;
+
+        const user = JSON.parse(userData);
+        const storedToken = localStorage.getItem("token");
+
+        if (storedToken !== token) return null;
+
+        return {
+            id: user.id,
+            name: user.name,
+            email: user.email
+        };
+    } catch (error) {
+        console.error('Token verification failed:', error);
+        return null;
+    }
+};

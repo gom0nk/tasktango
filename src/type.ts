@@ -1,35 +1,33 @@
 
 export type User = {
+    id: string;
     name: string;
     email: string;
     password: string;
     createdAt: Date;
     updatedAt: Date;
-    projects: Project[];
 };
 
 export type Project = {
+    id: string;
     name: string;
     description: string;
     createdAt: Date;
     updatedAt: Date;
     userId: string;
-    user: User;
-    tasks: Task[];
 };
 
 export type Task = {
+    id: string;
     name: string;
-    description: string;
+    description?: string;
     createdAt: Date;
     updatedAt: Date;
-    projectId: string;
-    project: Project;
-    subTasks: SubTask[];
-    comments: Comment[];
+    projectId?: string;
 };
 
 export type SubTask = {
+    id: string;
     name: string;
     description: string;
     createdAt: Date;
@@ -40,6 +38,7 @@ export type SubTask = {
 };
 
 export type Comment = {
+    id: string;
     content: string;
     createdAt: Date;
     updatedAt: Date;

@@ -23,6 +23,7 @@ model User {
     updatedAt DateTime @updatedAt
 
     Project Project[] @relation(name: "UserProjects")
+    Task    Task[]    @relation(name: "UserTasks")
 }
 
 model Project {
@@ -42,7 +43,9 @@ model Task {
     description String
     createdAt   DateTime  @default(now())
     updatedAt   DateTime  @updatedAt
-    projectId   String
+    userId      String
+    user        User      @relation(name: "UserTasks", fields: [userId], references: [id])
+    projectId   String?
     project     Project?  @relation(name: "ProjectTasks", fields: [projectId], references: [id])
     subTasks    SubTask[] @relation(name: "TaskSubTasks")
     comments    Comment[] @relation(name: "TaskComments")
