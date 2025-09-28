@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { GlobalSearch } from "@/components/GlobalSearch";
+import { TaskCreationBox } from "@/components/Dashboard/TaskCreationBox";
 import { getCurrentUser } from "@/lib/auth";
 import {
     Search,
@@ -41,6 +42,18 @@ export default function Dashboard() {
         return () => document.removeEventListener('keydown', handleKeyDown);
     }, []);
 
+    const handleTaskSubmit = (task: {
+        name: string;
+        description: string;
+        date?: string;
+        priority?: string;
+        reminders?: string;
+        project?: string;
+    }) => {
+        console.log('New task created:', task);
+        // TODO: Implement task creation logic
+    };
+
     return (
         <div className="flex h-screen bg-background">
             {/* Global Search */}
@@ -62,10 +75,12 @@ export default function Dashboard() {
 
                 {/* Add Task Button */}
                 <div className="p-4">
-                    <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
-                        <Plus className="h-4 w-4 mr-2" />
-                        Add task
-                    </Button>
+                    <TaskCreationBox onSubmit={handleTaskSubmit}>
+                        <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
+                            <Plus className="h-4 w-4 mr-2" />
+                            Add task
+                        </Button>
+                    </TaskCreationBox>
                 </div>
 
                 {/* Navigation */}
@@ -138,15 +153,17 @@ export default function Dashboard() {
                 <div className="border-b border-border p-6">
                     <div className="flex items-center justify-between">
                         <h1 className="text-2xl font-bold">Inbox</h1>
-                        <Button
-                            variant="outline"
-                            onClick={() => setIsSearchOpen(true)}
-                            className="flex items-center gap-2"
-                        >
-                            <Search className="h-4 w-4" />
-                            Search
-                            <kbd className="ml-2 px-2 py-1 text-xs bg-muted rounded">⌘K</kbd>
-                        </Button>
+                        <div className="flex items-center gap-2">
+                            <Button
+                                variant="outline"
+                                onClick={() => setIsSearchOpen(true)}
+                                className="flex items-center gap-2"
+                            >
+                                <Search className="h-4 w-4" />
+                                Search
+                                <kbd className="ml-2 px-2 py-1 text-xs bg-muted rounded">⌘K</kbd>
+                            </Button>
+                        </div>
                     </div>
                 </div>
 
@@ -206,10 +223,12 @@ export default function Dashboard() {
 
                     {/* Add Task Button at Bottom */}
                     <div className="mt-6">
-                        <Button variant="outline" className="w-full">
-                            <Plus className="h-4 w-4 mr-2" />
-                            Add task
-                        </Button>
+                        <TaskCreationBox onSubmit={handleTaskSubmit}>
+                            <Button variant="outline" className="w-full">
+                                <Plus className="h-4 w-4 mr-2" />
+                                Add task
+                            </Button>
+                        </TaskCreationBox>
                     </div>
                 </div>
             </div>
